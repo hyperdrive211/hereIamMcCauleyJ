@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">hereIamMcCauleyJ</string>
+    <string name="api_key">AIzaSyAG9DIqw1KSf8ucVt5dL6YN_ez05RklSRA</string>
+    <string name="btn_map">Open Map</string>
 </resources>
