@@ -4,25 +4,29 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context= ".MainActivity">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.MapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity"/>
+        tools:context=".MainActivity" />
 
     <Button
-        android:id="@+id/textBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="100dp"
+        android:id="@+id/text_button"
+        android:layout_width="250dp"
+        android:layout_height="60dp"
         android:layout_alignEnd="@+id/map"
         android:layout_alignRight="@+id/map"
         android:layout_alignBottom="@+id/map"
-        android:layout_marginEnd="184dp"
-        android:layout_marginRight="184dp"
-        android:layout_marginBottom="181dp" />
+        android:layout_marginEnd="78dp"
+        android:layout_marginRight="78dp"
+        android:layout_marginBottom="71dp"
+        android:textSize="10dp"
+        android:textColor="#fff"
+        android:background="@drawable/custom_button"
+        android:text="@string/button_text"/>
 
 
 </RelativeLayout>

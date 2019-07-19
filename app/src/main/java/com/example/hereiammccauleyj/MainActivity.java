@@ -32,6 +32,20 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String TAG = "MainActivity";
@@ -45,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private Location currentLocation;
+    private String apiLink ="https://maps.googleapis.com/maps/api/timezone/";
+    private Button dataButton;
 
 
     @Override
@@ -63,6 +79,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return;
             }
             mMap.setMyLocationEnabled(true);
+            mMap.getUiSettings().setZoomControlsEnabled(true);
+            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+            setMarker(mMap);
+
         }
     }
     @Override
@@ -73,9 +93,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void setMarker (GoogleMap mMap){
-        LatLng sydney = new LatLng(-33.852, 151.211);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng magee = new LatLng(55.006, -7.19);
+        mMap.addMarker(new MarkerOptions().position(magee).title("Home!!!!!"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(magee));
     }
 
 
@@ -111,6 +131,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             //Set up the camera position to the current location on the map.
                             currentLocation = (Location) task.getResult();
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()), DEFAULT_ZOOM);
+                            getButtonText(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()));
 
 
                         }else{
@@ -181,6 +202,55 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                }
            }
        }
+    }
+
+    private void getButtonText(LatLng latLng){
+
+        dataButton = findViewById(R.id.text_button);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(apiLink).addConverterFactory(GsonConverterFactory.create()).build();
+        JsonPlaceHolderApi jsonPlaceHolderApi = retrofit.create(JsonPlaceHolderApi.class);
+
+        Call<TimeZoneData> call = jsonPlaceHolderApi.getTimeZone(getApiLink(latLng.latitude,
+                latLng.longitude, getResources().getString(R.string.api_timezone_key)));
+        call.enqueue(new Callback<TimeZoneData>() {
+            @Override
+            public void onResponse(Call<TimeZoneData> call, Response<TimeZoneData> response) {
+            if(!response.isSuccessful()){
+                dataButton.setText("Request from server: " + response.code());
+                return;
+            }
+
+                TimeZoneData locationTimeZone = response.body();
+                String timezoneString = locationTimeZone.getTimeZoneId();
+                Log.d("Retrofit " , "Vlaue expected;  " + timezoneString);
+                dataButton.setText(timeZoneText(timezoneString));
+            }
+
+            @Override
+            public void onFailure(Call<TimeZoneData> call, Throwable t) {
+             dataButton.setText("Problem getting Data/n "+ t.getMessage());
+            }
+        });
+    }
+
+    private String getApiLink(double lat, double lng, String apiKey){
+        return "json?location="+lat+","+lng+"&timestamp=1331161200&key="+apiKey;
+    }
+
+    private String timeZoneText(String timezone){
+        Date date = new Date();
+        DateFormat df = new SimpleDateFormat("HH:mm:ss");
+        df.setTimeZone(TimeZone.getTimeZone(timezone));
+        Date currentTime = Calendar.getInstance().getTime();
+
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone(timezone));
+        int hour12 = cal.get(Calendar.HOUR); // 0..11
+        int minutes = cal.get(Calendar.MINUTE); // 0..59
+        int seconds = cal.get(Calendar.SECOND); // 0..59
+
+        String anotherMethod = hour12+":"+minutes+":"+seconds;
+        return "Time now " + currentTime + "Time in time zone: " + anotherMethod + "\n" + timezone;
     }
 
 
