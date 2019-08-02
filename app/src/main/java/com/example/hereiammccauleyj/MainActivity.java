@@ -52,7 +52,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COARSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
-    private static final float DEFAULT_ZOOM = 15f;
+    private static final float DEFAULT_ZOOM = 5f;
+    private static final String HOME_DESTINATION ="Europe/London";
 
     //variables
     private Boolean mLocationPermissionGranted = false;
@@ -65,9 +66,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Toast.makeText(this, "Map is ready", Toast.LENGTH_SHORT).show();
         mMap = googleMap;
-
         if (mLocationPermissionGranted) {
             getDeviceLocation();
             if (ActivityCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -82,9 +81,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mMap.getUiSettings().setZoomControlsEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
             setMarker(mMap);
+        } //Location Permission Granted
+    }// On Map Ready
 
-        }
-    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,31 +92,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         getLocationPermission();
     }
 
+
+    //Set Marker of Soft Spot Using hardcoded values.
     private void setMarker (GoogleMap mMap){
         LatLng magee = new LatLng(55.006, -7.19);
-        mMap.addMarker(new MarkerOptions().position(magee).title("Home!!!!!"));
+        mMap.addMarker(new MarkerOptions().position(magee).title("Soft Spot HQ"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(magee));
     }
-
-
-    private void updateLocationUI(){
-        if(mMap == null){
-            return;
-        }
-        try {
-            if(mLocationPermissionGranted) {
-                mMap.setMyLocationEnabled(true);
-                mMap.getUiSettings().setMyLocationButtonEnabled(true);
-            }else{
-                mMap.setMyLocationEnabled(false);
-                mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                getLocationPermission();
-            }
-        } catch(SecurityException e){
-            Log.e("Exception : %s", e.getMessage());
-        }
-    }
-
 
 
     private void getDeviceLocation(){
@@ -223,8 +205,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 TimeZoneData locationTimeZone = response.body();
                 String timezoneString = locationTimeZone.getTimeZoneId();
-                Log.d("Retrofit " , "Vlaue expected;  " + timezoneString);
-                dataButton.setText(timeZoneText(timezoneString));
+                Log.d("Retrofit " , "Value expected;  " + timezoneString);
+                dataButton.setText( textOutput(timeZoneText(timezoneString), timezoneString, timeZoneText(HOME_DESTINATION)));
             }
 
             @Override
@@ -239,18 +221,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private String timeZoneText(String timezone){
-        Date date = new Date();
-        DateFormat df = new SimpleDateFormat("HH:mm:ss");
-        df.setTimeZone(TimeZone.getTimeZone(timezone));
-        Date currentTime = Calendar.getInstance().getTime();
-
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone(timezone));
-        int hour12 = cal.get(Calendar.HOUR); // 0..11
+        Log.d(TAG, "timeZoneText: " + timezone);
+        int hour12 = cal.get(Calendar.HOUR_OF_DAY); // 0..11
         int minutes = cal.get(Calendar.MINUTE); // 0..59
         int seconds = cal.get(Calendar.SECOND); // 0..59
+        return formatTime(hour12)+":"+formatTime(minutes)+":"+formatTime(seconds);
+    }
 
-        String anotherMethod = hour12+":"+minutes+":"+seconds;
-        return "Time now " + currentTime + "Time in time zone: " + anotherMethod + "\n" + timezone;
+    private String textOutput(String destTime, String timezone, String homeTime){
+        return "Time now : " + destTime +"\n TimeZone : " + timezone + "\n Spoft Spot HQ Time: " + homeTime;
+    }
+
+    private String formatTime(int time){
+        return time < 10 ? "0"+ String.valueOf(time) : String.valueOf(time);
     }
 
 
